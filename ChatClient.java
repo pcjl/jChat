@@ -1,12 +1,11 @@
 import java.awt.*;
 import java.awt.event.*;
 
+import java.io.*;
+import java.net.*;
+
 import javax.swing.*;
 import javax.swing.SwingConstants;
-
-import java.io.*;
-
-import java.net.*;
 
 /**
  * A chat client to talk with other people.
@@ -16,27 +15,39 @@ import java.net.*;
  */
 public class ChatClient {
 	private JFrame frame;
+
+	private JMenuBar menuBar;
+	private JMenu fileMenu;
+	private JMenuItem newConnection;
+	private JMenuItem exitProgram;
+	private JMenu helpMenu;
+	private JMenuItem aboutProgram;
+
 	private JScrollPane chatArea;
 	private JTextArea chatTextArea;
 	private JPanel messageBar;
 	private JTextField messageField;
 	private JButton sendButton;
 
-	private String ipAddress = "10.242.181.61";
+	private String ipAddress = "127.0.0.1";
 	private int port = 5000;
 
-	private JTextField nameField;
+	private String username = "Patrick";
+	private String msg;
 
 	private Socket socket;
 	private BufferedReader input;
 	private PrintWriter output;
 
-	private String username = "Patrick";
-	private String msg;
-
+	/**
+	 * Constructs a new ChatClient.
+	 */
 	public ChatClient() {
 	} // ChatClient constructor
 
+	/**
+	 * Runs the chat client.
+	 */
 	public void go() {
 		// Create the frame of the main window
 		frame = new JFrame("Chat");
@@ -52,6 +63,59 @@ public class ChatClient {
 		frame.setSize(500, 800);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
+
+		menuBar = new JMenuBar();
+		fileMenu = new JMenu("File");
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+		helpMenu = new JMenu ("Help");
+		helpMenu.setMnemonic(KeyEvent.VK_H);
+
+		ActionListener menuListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (e.getSource() == newConnection) {
+					changeServer(true);
+				}
+
+				if (e.getSource() == exitProgram) {
+					try {
+						input.close();
+						output.close();
+						socket.close();
+					} catch (Exception exception) {
+						System.out.println("Failed to close socket.");
+					}
+					System.exit(0);
+				}
+
+				if (e.getSource() == aboutProgram) {
+					JOptionPane.showMessageDialog(frame, "Chat program designed and created by Patrick Liu.");
+				}
+			}
+		};
+
+		newConnection = new JMenuItem("New Connection", KeyEvent.VK_N);
+		newConnection.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+
+		exitProgram = new JMenuItem("Exit Program", KeyEvent.VK_X);
+
+		newConnection.addActionListener(menuListener);
+		exitProgram.addActionListener(menuListener);
+
+		fileMenu.add(newConnection);
+		fileMenu.addSeparator();
+		fileMenu.add(exitProgram);
+
+		aboutProgram = new JMenuItem("About Program", KeyEvent.VK_B);
+
+		aboutProgram.addActionListener(menuListener);
+
+		helpMenu.add(aboutProgram);
+
+		menuBar.add(fileMenu);
+		menuBar.add(helpMenu);
+
+		frame.setJMenuBar(menuBar);
 
 		// Create a text area that will show the chat history
 		chatTextArea = new JTextArea();
@@ -81,13 +145,15 @@ public class ChatClient {
 					if (msg.length() != 0) {
 						if (msg.charAt(0) != '/') {
 							// Send the username and message to the server
-							output.println(username + ": " + msg + "\n");
+							output.println(username + ": " + msg);
 							output.flush();
 
 							// Clear the text field for the message
 							messageField.setText("");
 						} else {
 							// Handle commands
+							output.println(username + ": " + msg);
+							output.flush();
 
 							// Clear the text field for the message
 							messageField.setText("");
@@ -114,7 +180,7 @@ public class ChatClient {
 		frame.setVisible(true);
 
 		// Make the user choose a server
-		changeServer();
+		changeServer(false);
 
 		chatTextArea.append("Attempting to connect to the server...\n");
 		boolean connected = false;
@@ -125,11 +191,12 @@ public class ChatClient {
 				// Connect to the server and set up an input and output stream
 				socket = new Socket(ipAddress, port);
 				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				output = new PrintWriter(new PrintWriter(socket.getOutputStream()));
+				output = new PrintWriter(socket.getOutputStream());
 				connected = true;
 			} catch (Exception e) {
 				chatTextArea.append("Connection to the server failed.\n");
-				changeServer();
+				changeServer(false);
+				connected = false;
 			}
 		}
 
@@ -140,12 +207,15 @@ public class ChatClient {
 
 		// Tell the server the username of the client
 		output.println(username);
+		output.flush();
 
 		// Keep trying to get a message from the server while the client is connected to the server
 		while (connected) {
 			try {
-				msg = input.readLine();
-				chatTextArea.append(msg);
+				if (input.ready()) {
+					msg = input.readLine();
+					chatTextArea.append(msg + "\n");
+				}
 			} catch (Exception e) {
 				chatTextArea.append("Failed to receive message from the server.");
 			}
@@ -191,7 +261,7 @@ public class ChatClient {
 	/**
 	 * Allows the user to choose a server.
 	 */
-	private void changeServer() {
+	private void changeServer(boolean alreadyConnected) {
 		// Keep track on whether a valid server has been chosen
 		boolean serverBoolean = false;
 
@@ -203,8 +273,11 @@ public class ChatClient {
 		// Keep creating a window asking for a server
 		// until a valid server is chosen
 		while (!serverBoolean) {
-			JOptionPane.showConfirmDialog(frame, connectObjects, "Choose a server", JOptionPane.OK_CANCEL_OPTION);
-
+			if (alreadyConnected) {
+				JOptionPane.showConfirmDialog(frame, connectObjects, "Choose a server", JOptionPane.OK_CANCEL_OPTION);
+			} else {
+				JOptionPane.showConfirmDialog(frame, connectObjects, "Choose a server", JOptionPane.DEFAULT_OPTION);
+			}
 			// Get the information that the user entered
 			String currentIpAddress = ipAddressField.getText();
 			String currentPort = portField.getText();
