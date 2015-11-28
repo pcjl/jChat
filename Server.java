@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 
 import java.util.Scanner;
+import java.util.ArrayList;
 
 /**
  * A chat server to allow people to talk to each other.
@@ -13,6 +14,7 @@ public class Server {
 	ServerSocket serverSocket;
 	boolean running = true;
 	int noOfClients = 0;
+	ArrayList<PrintWriter> outputs = new ArrayList<PrintWriter>();
 
 	/**
 	 * Constructs a new Server.
@@ -75,6 +77,7 @@ public class Server {
 			try {
 				input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				output = new PrintWriter(client.getOutputStream());
+				outputs.add(output);
 			} catch (IOException e) {
 				System.out.println("Failed to set up input and output streams.");
 			}
@@ -103,17 +106,22 @@ public class Server {
 						msg = input.readLine();
 						System.out.println(msg);
 
+
 						if (msg.charAt(username.length() + 2) != '/') {
-							output.println(msg);
-							output.flush();
+							for (int client = 0; client < outputs.size(); client++) {
+								outputs.get(client).println(msg);
+								outputs.get(client).flush();
+							}
 						} else {
 							// Handle commands
 						}
 					}
-				} catch (IOException e) {
+				} catch
+					(IOException e) {
 					System.out.println("Failed to receive message from client.");
 				}
 			}
+
 
 			// try {
 			// 	input.close();
@@ -122,9 +130,9 @@ public class Server {
 			// } catch (Exception e) {
 			// 	System.out.println("Failed to close socket.");
 			// }
+
 		} // run method
 	} // ConnectionHandler class
-
 
 
 
