@@ -73,6 +73,8 @@ public class ChatClient {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				try {
+					output.println(username + ": /logout");
+					output.flush();
 					input.close();
 					output.close();
 					socket.close();
@@ -124,6 +126,8 @@ public class ChatClient {
 
 				if (e.getSource() == exitProgram) {
 					try {
+						output.println(username + ": /logout");
+						output.flush();
 						input.close();
 						output.close();
 						socket.close();
