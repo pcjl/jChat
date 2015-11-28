@@ -32,7 +32,7 @@ public class ChatClient {
 	private String ipAddress = "127.0.0.1";
 	private int port = 5000;
 
-	private String username = "Patrick";
+	private String username;
 	private String msg;
 
 	private Socket socket;
