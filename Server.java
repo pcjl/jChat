@@ -3,6 +3,10 @@ import java.net.*;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Date;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * A chat server to allow people to talk to each other.
@@ -15,6 +19,8 @@ public class Server {
 	boolean running = true;
 	int noOfClients = 0;
 	ArrayList<PrintWriter> outputs = new ArrayList<PrintWriter>();
+	DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+	Date date;
 
 	/**
 	 * Constructs a new Server.
@@ -35,15 +41,18 @@ public class Server {
 			System.out.print("Please enter a valid port: ");
 			port = keyboard.nextLine();
 		}
-		System.out.println("Server started.");
-		System.out.println("Waiting for connections...");
+		date = new Date();
+		System.out.println("[" + dateFormat.format(date) + "] Server started.");
+		date = new Date();
+		System.out.println("[" + dateFormat.format(date) + "] Waiting for connections...");
 
 		try {
 			serverSocket = new ServerSocket(Integer.parseInt(port));
 
 			while (running) {
 				Socket client = serverSocket.accept();
-				System.out.println("Client (" + client.getLocalAddress().getHostAddress() + ") is connecting...");
+				date = new Date();
+				System.out.println("[" + dateFormat.format(date) + "] Client (" + client.getLocalAddress().getHostAddress() + ") is connecting...");
 				noOfClients++;
 				Thread t = new Thread(new ConnectionHandler(client));
 				t.start();
@@ -79,7 +88,8 @@ public class Server {
 				System.out.println("Failed to receive username from client.");
 			}
 
-			System.out.println("\"" + username + "\" (" + client.getLocalAddress().getHostAddress() + ") has connected.");
+			date = new Date();
+			System.out.println("[" + dateFormat.format(date) + "] \"" + username + "\" (" + client.getLocalAddress().getHostAddress() + ") has connected.");
 
 			output.println("Hello " + username + "!");
 			output.flush();
@@ -92,7 +102,8 @@ public class Server {
 				try {
 					if (input.ready()) {
 						msg = input.readLine();
-						System.out.println(msg);
+						date = new Date();
+						System.out.println("[" + dateFormat.format(date) + "] " + msg);
 
 
 						if (msg.charAt(username.length() + 2) != '/') {

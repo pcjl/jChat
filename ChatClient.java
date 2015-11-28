@@ -8,10 +8,9 @@ import javax.swing.*;
 import javax.swing.SwingConstants;
 
 import java.text.DateFormat;
-import java.util.Date;
 import java.text.SimpleDateFormat;
 
-
+import java.util.Date;
 
 /**
  * A chat client to talk with other people.
@@ -216,8 +215,6 @@ public class ChatClient {
 		output.flush();
 
 		DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
-		System.out.println();
 
 		// Keep trying to get a message from the server while the client is connected to the server
 		while (connected) {
