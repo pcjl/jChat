@@ -7,6 +7,12 @@ import java.net.*;
 import javax.swing.*;
 import javax.swing.SwingConstants;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+
+
+
 /**
  * A chat client to talk with other people.
  *
@@ -209,12 +215,17 @@ public class ChatClient {
 		output.println(username);
 		output.flush();
 
+		DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+		System.out.println();
+
 		// Keep trying to get a message from the server while the client is connected to the server
 		while (connected) {
 			try {
 				if (input.ready()) {
 					msg = input.readLine();
-					chatTextArea.append(msg + "\n");
+					Date date = new Date();
+					chatTextArea.append("[" + dateFormat.format(date) + "] " + msg + "\n");
 				}
 			} catch (Exception e) {
 				chatTextArea.append("Failed to receive message from the server.");

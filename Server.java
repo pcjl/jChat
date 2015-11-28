@@ -54,15 +54,6 @@ public class Server {
 		}
 	} // go method
 
-
-
-
-
-
-
-
-
-
 	class ConnectionHandler implements Runnable {
 		BufferedReader input;
 		PrintWriter output;
@@ -130,20 +121,6 @@ public class Server {
 
 		} // run method
 	} // ConnectionHandler class
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	/**
 	 * Check if a string is a valid port number.
