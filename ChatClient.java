@@ -7,10 +7,11 @@ import java.net.*;
 import javax.swing.*;
 import javax.swing.SwingConstants;
 
+import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.Date;
+import javax.swing.text.StyledDocument;
 
 /**
  * A chat client to talk with other people.
@@ -29,10 +30,12 @@ public class ChatClient {
 	private JMenuItem aboutProgram;
 
 	private JScrollPane chatArea;
-	private JTextArea chatTextArea;
+	private JTextPane chatTextArea;
 	private JPanel messageBar;
 	private JTextField messageField;
 	private JButton sendButton;
+
+	private StyledDocument doc;
 
 	private String ipAddress = "127.0.0.1";
 	private int port = 5000;
@@ -123,10 +126,11 @@ public class ChatClient {
 		frame.setJMenuBar(menuBar);
 
 		// Create a text area that will show the chat history
-		chatTextArea = new JTextArea();
+		chatTextArea = new JTextPane();
+		doc = (StyledDocument) chatTextArea.getDocument();
 		chatTextArea.setEditable(false);
-		chatTextArea.setLineWrap(true);
-		chatTextArea.setWrapStyleWord(true);
+		// chatTextArea.setLineWrap(true);
+		// chatTextArea.setWrapStyleWord(true);
 		chatArea = new JScrollPane(chatTextArea);
 
 		// Add the chat area to the center of the frame
@@ -187,7 +191,11 @@ public class ChatClient {
 		// Make the user choose a server
 		changeServer(false);
 
-		chatTextArea.append("Attempting to connect to the server...\n");
+		try {
+			doc.insertString(doc.getLength(), "Attempting to connect to the server...\n", null);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		boolean connected = false;
 
 		// While the client is not connected to a server, continue trying to connect to a new server
@@ -198,14 +206,22 @@ public class ChatClient {
 				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				output = new PrintWriter(socket.getOutputStream());
 				connected = true;
-			} catch (Exception e) {
-				chatTextArea.append("Connection to the server failed.\n");
+			} catch (Exception ex) {
+				try {
+					doc.insertString(doc.getLength(), "Connection to the server failed.\n", null);
+				} catch (Exception e) {
+					ex.printStackTrace();
+				}
 				changeServer(false);
 				connected = false;
 			}
 		}
 
-		chatTextArea.append("Connected to the server.\n");
+		try {
+			doc.insertString(doc.getLength(), "Connected to the server.\n", null);
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
 
 		// Make the user choose a username
 		chooseUsername();
@@ -222,10 +238,18 @@ public class ChatClient {
 				if (input.ready()) {
 					msg = input.readLine();
 					Date date = new Date();
-					chatTextArea.append("[" + dateFormat.format(date) + "] " + msg + "\n");
+					try {
+						doc.insertString(doc.getLength(), "[" + dateFormat.format(date) + "] " + msg + "\n", null);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
-			} catch (Exception e) {
-				chatTextArea.append("Failed to receive message from the server.");
+			} catch (Exception ex) {
+				try {
+					doc.insertString(doc.getLength(), "Failed to receive message from the server.", null);
+				} catch (Exception e) {
+					ex.printStackTrace();
+				}
 			}
 		}
 

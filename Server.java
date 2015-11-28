@@ -98,7 +98,8 @@ public class Server {
 
 			String msg;
 
-			while (true) {
+			boolean isConnected = true;
+			while (isConnected) {
 				try {
 					if (input.ready()) {
 						msg = input.readLine();
