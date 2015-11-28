@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import javax.swing.text.StyledDocument;
+import javax.swing.text.DefaultCaret;
 
 /**
  * A chat client to talk with other people.
@@ -32,7 +33,8 @@ public class ChatClient {
 	private JScrollPane chatArea;
 	private JTextPane chatTextArea;
 	private JPanel messageBar;
-	private JTextField messageField;
+	private JTextArea messageField;
+	private JScrollPane messageFieldScrollPane;
 	private JButton sendButton;
 
 	private StyledDocument doc;
@@ -59,6 +61,41 @@ public class ChatClient {
 	public void go() {
 		// Create the frame of the main window
 		frame = new JFrame("Chat");
+		frame.addWindowListener(new WindowListener() {
+			@Override
+			public void windowActivated(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowClosed(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				try {
+					input.close();
+					output.close();
+					socket.close();
+				} catch (Exception e) {
+				}
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowIconified(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowOpened(WindowEvent arg0) {
+			}
+		});
 
 		// Set the look and feel of the program to Windows
 		try {
@@ -91,7 +128,6 @@ public class ChatClient {
 						output.close();
 						socket.close();
 					} catch (Exception exception) {
-						System.out.println("Failed to close socket.");
 					}
 					System.exit(0);
 				}
@@ -129,13 +165,62 @@ public class ChatClient {
 		chatTextArea = new JTextPane();
 		doc = (StyledDocument) chatTextArea.getDocument();
 		chatTextArea.setEditable(false);
+		DefaultCaret caret = (DefaultCaret)chatTextArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		chatArea = new JScrollPane(chatTextArea);
 
 		// Add the chat area to the center of the frame
 		frame.add(chatArea, BorderLayout.CENTER);
 
 		// Create a text field and button for sending messages
-		messageField = new JTextField(30);
+		messageField = new JTextArea();
+		messageField.setColumns(50);
+		messageField.setRows(3);
+		messageField.setLineWrap(true);
+		messageField.setWrapStyleWord(true);
+
+		messageField.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					sendButton.doClick();
+
+					// Remove the spaces from the ends of the string
+					msg = messageField.getText().trim();
+
+					// Make sure the message is not empty
+					if (msg.length() != 0) {
+						if (msg.charAt(0) != '/') {
+							// Send the username and message to the server
+							output.println(username + ": " + msg);
+							output.flush();
+
+							// Clear the text field for the message
+							messageField.setText("");
+						} else {
+							// Handle commands
+							output.println(username + ": " + msg);
+							output.flush();
+
+							// Clear the text field for the message
+							messageField.setText("");
+						}
+
+						// Clear the text field for the message
+						messageField.setText("");
+					}
+				}
+			}
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+		});
+		messageFieldScrollPane = new JScrollPane(messageField);
 		sendButton = new JButton("Send");
 
 		// Create an action listener that will allow sending messages to the server
@@ -174,12 +259,12 @@ public class ChatClient {
 		};
 
 		// Add the action listenre to the text field and button
-		messageField.addActionListener(messageListener);
+		// messageField.addActionListener(messageListener);
 		sendButton.addActionListener(messageListener);
 
 		// Put the text field and button a horizontal panel and add it to the frame
 		messageBar = new JPanel(new FlowLayout());
-		messageBar.add(messageField);
+		messageBar.add(messageFieldScrollPane);
 		messageBar.add(sendButton);
 		frame.add(messageBar, BorderLayout.SOUTH);
 
@@ -189,17 +274,17 @@ public class ChatClient {
 		// Make the user choose a server
 		changeServer(false);
 
-		try {
-			doc.insertString(doc.getLength(), "Attempting to connect to the server...\n", null);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 		boolean connected = false;
 
 		// While the client is not connected to a server, continue trying to connect to a new server
-		if (!connected) {
+		while (!connected) {
 			try {
 				// Connect to the server and set up an input and output stream
+				try {
+					doc.insertString(doc.getLength(), "Attempting to connect to the server...\n", null);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 				socket = new Socket(ipAddress, port);
 				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				output = new PrintWriter(socket.getOutputStream());
@@ -217,7 +302,7 @@ public class ChatClient {
 
 		try {
 			doc.insertString(doc.getLength(), "Connected to the server.\n", null);
-		} catch (Exception ex){
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 

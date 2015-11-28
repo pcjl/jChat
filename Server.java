@@ -41,18 +41,15 @@ public class Server {
 			System.out.print("Please enter a valid port: ");
 			port = keyboard.nextLine();
 		}
-		date = new Date();
-		System.out.println("[" + dateFormat.format(date) + "] Server started.");
-		date = new Date();
-		System.out.println("[" + dateFormat.format(date) + "] Waiting for connections...");
+		System.out.println("[" + dateFormat.format(new Date()) + "] Server started.");
+		System.out.println("[" + dateFormat.format(new Date()) + "] Waiting for connections...");
 
 		try {
 			serverSocket = new ServerSocket(Integer.parseInt(port));
 
 			while (running) {
 				Socket client = serverSocket.accept();
-				date = new Date();
-				System.out.println("[" + dateFormat.format(date) + "] Client (" + client.getLocalAddress().getHostAddress() + ") is connecting...");
+				System.out.println("[" + dateFormat.format(new Date()) + "] Client (" + client.getLocalAddress().getHostAddress() + ") is connecting...");
 				noOfClients++;
 				Thread t = new Thread(new ConnectionHandler(client));
 				t.start();
@@ -88,8 +85,7 @@ public class Server {
 				System.out.println("Failed to receive username from client.");
 			}
 
-			date = new Date();
-			System.out.println("[" + dateFormat.format(date) + "] \"" + username + "\" (" + client.getLocalAddress().getHostAddress() + ") has connected.");
+			System.out.println("[" + dateFormat.format(new Date()) + "] \"" + username + "\" (" + client.getLocalAddress().getHostAddress() + ") has connected.");
 
 			output.println("Hello " + username + "!");
 			output.flush();
@@ -99,12 +95,11 @@ public class Server {
 			String msg;
 
 			boolean isConnected = true;
-			while (isConnected) {
+			while (!client.isClosed()) {
 				try {
 					if (input.ready()) {
 						msg = input.readLine();
-						date = new Date();
-						System.out.println("[" + dateFormat.format(date) + "] " + msg);
+						System.out.println("[" + dateFormat.format(new Date()) + "] " + msg);
 
 
 						if (msg.charAt(username.length() + 2) != '/') {
@@ -123,13 +118,19 @@ public class Server {
 			}
 
 
-			// try {
-			// 	input.close();
-			// 	output.close();
-			// 	client.close();
-			// } catch (Exception e) {
-			// 	System.out.println("Failed to close socket.");
-			// }
+			try {
+				System.out.println("[" + dateFormat.format(new Date()) + "] " + username + " has disconnected.");
+				input.close();
+				output.close();
+				client.close();
+				noOfClients--;
+				for (int client = 0; client < outputs.size(); client++) {
+					outputs.get(client).println(username + " has disconnected.");
+					outputs.get(client).flush();
+				}
+			} catch (Exception e) {
+				System.out.println("Failed to close socket.");
+			}
 
 		} // run method
 	} // ConnectionHandler class
