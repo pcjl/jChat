@@ -95,9 +95,6 @@ public class Server {
 			output.println("There are currently " + noOfClients + " client(s) connected.");
 			output.flush();
 
-
-
-
 			String msg;
 
 			while (true) {
