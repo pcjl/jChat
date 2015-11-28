@@ -68,7 +68,7 @@ public class ChatClient {
 
 		// Set basic properties of the frame
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(500, 800);
+		frame.setSize(560, 400);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 
@@ -129,8 +129,6 @@ public class ChatClient {
 		chatTextArea = new JTextPane();
 		doc = (StyledDocument) chatTextArea.getDocument();
 		chatTextArea.setEditable(false);
-		// chatTextArea.setLineWrap(true);
-		// chatTextArea.setWrapStyleWord(true);
 		chatArea = new JScrollPane(chatTextArea);
 
 		// Add the chat area to the center of the frame
