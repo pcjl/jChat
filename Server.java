@@ -92,15 +92,19 @@ public class Server {
 			output.println("There are currently " + noOfClients + " client(s) connected.");
 			output.flush();
 
+			for (int client = 0; client < outputs.size(); client++) {
+				outputs.get(client).println(username + " has connected.");
+				outputs.get(client).flush();
+			}
+
 			String msg;
 
 			boolean isConnected = true;
-			while (!client.isClosed()) {
+			while (isConnected) {
 				try {
 					if (input.ready()) {
 						msg = input.readLine();
 						System.out.println("[" + dateFormat.format(new Date()) + "] " + msg);
-
 
 						if (msg.charAt(username.length() + 2) != '/') {
 							for (int client = 0; client < outputs.size(); client++) {
@@ -109,6 +113,9 @@ public class Server {
 							}
 						} else {
 							// Handle commands
+							if (msg.equals(username + ": /logout")) {
+								isConnected = false;
+							}
 						}
 					}
 				} catch
